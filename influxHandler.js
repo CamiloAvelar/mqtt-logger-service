@@ -27,7 +27,6 @@ class InfluxHandler {
     ).catch(err => {
       console.log(err);
     }).then(results => {
-      console.log(results)
       return results;
     })
   }
