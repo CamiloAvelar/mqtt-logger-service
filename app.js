@@ -19,25 +19,32 @@ SUBSCRIBE_TOPICS.forEach((topic) => {
 
 let usuario;
 let sensorCount = 0;
+let actuatorOn;
 mqttClient.on('messageReceived', (received) => {
   switch(received.topic) {
     case 'keys':
-      keysHandler.handle(received.message);
+      if(!actuatorOn) {
+        keysHandler.handle(received.message);
+      }
       break;
     case 'actuator':
       if(received.message === 'start') {
         console.log('STARTING ACTUATOR, OPENING VALVULE');
-        timeHandler.countTime(5000, usuario.id) // usuario.allowedBathTime * 60000
+        timeHandler.countTime(usuario.allowedBathTime * 60000, usuario.id) // usuario.allowedBathTime * 60000
+        mqttClient.sendMessage('ON', `homeassistant/binary_sensor/${usuario.name}/state`);
+        actuatorOn = true;
       }
 
       if(received.message === 'stop') {
         console.log('STOPING ACTUATOR, CLOSING VALVULE');
+        timeHandler.endTime();
         if(usuario) {
-          timeHandler.endTime();
           influxDB.getPoints(usuario.id)
             .then(/*console.log*/);
         }
         sensorCount = 0;
+        actuatorOn = false;
+        mqttClient.sendMessage('OFF', `homeassistant/binary_sensor/${usuario.name}/state`);
       }
       break;
     case 'sensor':
@@ -53,7 +60,7 @@ mqttClient.on('messageReceived', (received) => {
           .then(console.log)
           .catch(console.log);
       } else {
-        console.log('NO USER DETECTED, STOPPING ACTUATOR')
+        console.log('NO USER DETECTED, STOPPING ACTUATOR');
         mqttClient.sendMessage('stop', 'actuator')
       };
       break;

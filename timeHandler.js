@@ -1,3 +1,5 @@
+const requestService = require('./requestService');
+
 class timeHandler {
   constructor(mqttClient) {
     this.mqttClient = mqttClient;
@@ -15,23 +17,35 @@ class timeHandler {
 
     this.interval = setInterval(() => {
       this.mqttClient.sendMessage('stop', 'actuator');
-      clearInterval(this.interval);
-      this.endTime();
+      this.clearBathInterval();
     }, this.allowedTime);
   }
 
-  endTime() {
+  async endTime() {
     this.clearBathInterval();
     this.endDate = new Date();
 
     const bathTime = this.endDate - this.nowDate;
 
     console.log('BATHTIME>>>', bathTime);
-    //TODO: SAVE TO DB with this.userId;
+    await this._requestUserService(bathTime);
   }
 
   clearBathInterval(){
     clearInterval(this.interval);
+  }
+
+  async _requestUserService(time) {
+    const requestOptions = {
+      type: 'POST',
+      endpoint: 'banho',
+      body: {
+        user_id: this.userId,
+        bath_time: time
+      },
+    };
+
+    return await requestService.userRequest(requestOptions);
   }
 }
 

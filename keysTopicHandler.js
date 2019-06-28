@@ -1,4 +1,4 @@
-const request = require('request-promise');
+const requestService = require('./requestService');
 
 class KeysHandler {
   constructor(mqttClient) {
@@ -36,26 +36,24 @@ class KeysHandler {
   }
 
   async _requestUserService() {
-    const requestOptions = !this.gettingPassword ? {
-      method: 'GET',
-      uri: `http://localhost:3001/usuario/${this.keyBuffer}`,
-      json: true
-    } : {
-      method: 'POST',
-      uri: `http://localhost:3001/usuario/autorizar`,
-      body: {
+    const requestOptions = this.gettingPassword ? {
+      type: 'POST',
+      endpoint: `usuario/autorizar`,
+      body:{
         id: this.userId,
         password: this.keyBuffer
       },
-      json: true
+    }: {
+      type: 'GET',
+      endpoint: `usuario/${this.keyBuffer}`,
+      body: null,
     };
 
-    return request(requestOptions)
+    return requestService.userRequest(requestOptions)
       .then((response) => {
         this.userId = this.gettingPassword ? this.userId : response.id;
-        return response;
-      })
-      .catch((err) => {throw err});
+        return response
+      }).catch(err => {throw err});
   }
 }
 
