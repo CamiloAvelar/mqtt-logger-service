@@ -6,7 +6,7 @@ class MqttHandler extends EventEmitter {
   constructor() {
     super();
     this.mqttClient = null;
-    this.host = 'mqtt://localhost';
+    this.host = 'mqtt://mosquitto';
     this.username = 'mqtt_user'; // mqtt credentials if these are needed to connect
     this.password = '100200300';
   }

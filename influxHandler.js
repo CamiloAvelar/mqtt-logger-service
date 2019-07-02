@@ -3,7 +3,7 @@ const Influx = require('influx');
 class InfluxHandler {
   constructor() {
     this.influx;
-    this.host = 'localhost';
+    this.host = 'influxdb';
     this.database = 'water_flow_data'
   }
 
@@ -17,6 +17,16 @@ class InfluxHandler {
         tags: ['user_id']
       }]
     });
+
+    this.influx.getDatabaseNames()
+      .then(names => {
+        if(!names.includes(this.database)) {
+          return this.influx.createDatabase(this.database);
+        }
+      })
+      .then(() => {
+        console.log('InfluxDB connected!');
+      })
   }
 
   getPoints(id) {
@@ -40,7 +50,7 @@ class InfluxHandler {
     }], {
       database: this.database,
       precision: 's',
-    }).catch(err => console.error(`Error saving data to InfluxDB! ${error.stack}`))
+    }).catch(err => console.error(`Error saving data to InfluxDB! ${err.stack}`))
       .then(() => {return 'Dados salvos no banco'})
   }
 }

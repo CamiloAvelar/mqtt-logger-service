@@ -6,13 +6,13 @@ module.exports = {
     if (type === 'GET') {
       requestOptions = {
         method: 'GET',
-        uri: `http://localhost:3001/${endpoint}`,
+        uri: `http://user:3001/${endpoint}`,
         json: true
       };
     } else if (type === 'POST') {
       requestOptions = {
         method: 'POST',
-        uri: `http://localhost:3001/${endpoint}`,
+        uri: `http://user:3001/${endpoint}`,
         body,
         json: true
       };
